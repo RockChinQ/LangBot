@@ -644,6 +644,57 @@ class Unknown(MessageComponent):
     """文本。"""
 
 
+
+
+class MiniPrograms(MessageComponent):
+    """小程序"""
+    type: str = 'MiniPrograms'
+    """小程序id"""
+    mini_app_id: str
+    """小程序归属用户id"""
+    user_name: str
+    """小程序名称"""
+    display_name: typing.Optional[str] = ''
+    """打开地址"""
+    page_path: typing.Optional[str] = ''
+    """小程序标题"""
+    title: typing.Optional[str] = ''
+    """首页图片"""
+    image_url: typing.Optional[str] = ''
+
+
+class ForwardMiniPrograms(MessageComponent):
+    """转发小程序"""
+    type: str = 'ForwardMiniPrograms'
+    """xml数据"""
+    xml_data: str
+    """首页图片"""
+    image_url: typing.Optional[str] = None
+
+
+class EmoJi(MessageComponent):
+    """emoji表情"""
+    type: str = 'EmoJi'
+    """emojimd5"""
+    emoji_md5: str
+    """emoji大小"""
+    emoji_size: int
+
+
+class Link(MessageComponent):
+    """发送链接"""
+    type: str = 'Link'
+    """标题"""
+    link_title: str = ''
+    """链接描述"""
+    link_desc: str = ''
+    """链接地址"""
+    link_url: str = ''
+    """链接略缩图"""
+    link_thumb_url: str = ''
+
+
+
 class Voice(MessageComponent):
     """语音。"""
     type: str = "Voice"
