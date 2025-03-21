@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import asyncio
 import datetime
+import typing
 
 import sqlalchemy.ext.asyncio as sqlalchemy_asyncio
 import sqlalchemy
 
 from . import database
-from .entities import user, base
+from ..entity.persistence import user, model, base
 from ..core import app
 from .databases import sqlite
 
@@ -55,3 +56,9 @@ class PersistenceManager:
 
     def get_db_engine(self) -> sqlalchemy_asyncio.AsyncEngine:
         return self.db.get_engine()
+    
+    def serialize_model(self, model: typing.Type[sqlalchemy.Base], data: sqlalchemy.Base) -> dict:
+        return {
+            column.name: getattr(data, column.name) if not isinstance(getattr(data, column.name), (datetime.datetime)) else getattr(data, column.name).isoformat()
+            for column in model.__table__.columns
+        }

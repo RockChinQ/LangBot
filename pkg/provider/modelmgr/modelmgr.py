@@ -1,36 +1,116 @@
 from __future__ import annotations
 
-import aiohttp
+import typing
+import sqlalchemy
 
 from . import entities, requester
 from ...core import app
+from ...core import entities as core_entities
+from .. import entities as llm_entities
+from ..tools import entities as tools_entities
 from ...discover import engine
 from . import token
+from ...entity.persistence import model as persistence_model
 from .requesters import bailianchatcmpl, chatcmpl, anthropicmsgs, moonshotchatcmpl, deepseekchatcmpl, ollamachat, giteeaichatcmpl, volcarkchatcmpl, xaichatcmpl, zhipuaichatcmpl, lmstudiochatcmpl, siliconflowchatcmpl, volcarkchatcmpl
 
 FETCH_MODEL_LIST_URL = "https://api.qchatgpt.rockchin.top/api/v2/fetch/model_list"
 
 
+class RuntimeLLMModel:
+    """运行时模型"""
+
+    model_entity: persistence_model.LLMModel
+    """模型数据"""
+
+    token_mgr: token.TokenManager
+    """api key管理器"""
+
+    requester: requester.LLMAPIRequester
+    """请求器实例"""
+    
+    def __init__(self, model_entity: persistence_model.LLMModel, token_mgr: token.TokenManager, requester: requester.LLMAPIRequester):
+        self.model_entity = model_entity
+        self.token_mgr = token_mgr
+        self.requester = requester
+
+
 class ModelManager:
     """模型管理器"""
 
+    model_list: list[entities.LLMModelInfo]  # deprecated
+
+    requesters: dict[str, requester.LLMAPIRequester]  # deprecated
+
+    token_mgrs: dict[str, token.TokenManager]  # deprecated
+
+    # ====== 4.0 ======
+
     ap: app.Application
+
+    llm_models: list[RuntimeLLMModel]
 
     requester_components: list[engine.Component]
 
-    model_list: list[entities.LLMModelInfo]
-
-    requesters: dict[str, requester.LLMAPIRequester]
-
-    token_mgrs: dict[str, token.TokenManager]
+    requester_dict: dict[str, type[requester.LLMAPIRequester]]  # cache
     
     def __init__(self, ap: app.Application):
         self.ap = ap
         self.model_list = []
         self.requesters = {}
         self.token_mgrs = {}
+        self.llm_models = []
+        self.requester_components = []
+        self.requester_dict = {}
+    
+    async def initialize(self):
+        self.requester_components = self.ap.discover.get_components_by_kind('LLMAPIRequester')
 
-    async def get_model_by_name(self, name: str) -> entities.LLMModelInfo:
+        # forge requester class dict
+        requester_dict: dict[str, type[requester.LLMAPIRequester]] = {}
+        for component in self.requester_components:
+            requester_dict[component.metadata.name] = component.get_python_component_class()
+
+        self.requester_dict = requester_dict
+
+        await self.load_model_from_db()
+
+    async def load_model_from_db(self):
+        """从数据库加载模型"""
+        self.llm_models = []
+
+        # llm models
+        result = await self.ap.persistence_mgr.execute_async(
+            sqlalchemy.select(persistence_model.LLMModel)
+        )
+
+        llm_models = result.all()
+
+        # load models
+        for llm_model in llm_models:
+            await self.load_llm_model(llm_model)
+    
+    async def load_llm_model(self, model_info: persistence_model.LLMModel | sqlalchemy.Row[persistence_model.LLMModel] | dict):
+        """加载模型"""
+        
+        if isinstance(model_info, sqlalchemy.Row):
+            model_info = persistence_model.LLMModel(**model_info._mapping)
+        elif isinstance(model_info, dict):
+            model_info = persistence_model.LLMModel(**model_info)
+
+        runtime_llm_model = RuntimeLLMModel(
+            model_entity=model_info,
+            token_mgr=token.TokenManager(
+                name=model_info.uuid,
+                tokens=model_info.api_keys,
+            ),
+            requester=self.requester_dict[model_info.requester](
+                ap=self.ap,
+                config=model_info.requester_config
+            )
+        )
+        self.llm_models.append(runtime_llm_model)
+
+    async def get_model_by_name(self, name: str) -> entities.LLMModelInfo:  # deprecated
         """通过名称获取模型
         """
         for model in self.model_list:
@@ -38,84 +118,40 @@ class ModelManager:
                 return model
         raise ValueError(f"无法确定模型 {name} 的信息，请在元数据中配置")
     
-    async def initialize(self):
+    async def get_model_by_uuid(self, uuid: str) -> entities.LLMModelInfo:
+        """通过uuid获取模型"""
+        for model in self.llm_models:
+            if model.model_entity.uuid == uuid:
+                return model
+        raise ValueError(f"model {uuid} not found")
 
-        self.requester_components = self.ap.discover.get_components_by_kind('LLMAPIRequester')
+    async def remove_llm_model(self, model_uuid: str):
+        """移除模型"""
+        for model in self.llm_models:
+            if model.model_entity.uuid == model_uuid:
+                self.llm_models.remove(model)
+                return
 
-        # 初始化token_mgr, requester
-        for k, v in self.ap.provider_cfg.data['keys'].items():
-            self.token_mgrs[k] = token.TokenManager(k, v)
+    def get_available_requesters_info(self) -> list[dict]:
+        """获取所有可用的请求器"""
+        return [
+            component.to_plain_dict()
+            for component in self.requester_components
+        ]
 
-        # for api_cls in requester.preregistered_requesters:
-        #     api_inst = api_cls(self.ap)
-        #     await api_inst.initialize()
-        #     self.requesters[api_inst.name] = api_inst
+    def get_available_requester_info_by_name(self, name: str) -> dict | None:
+        """通过名称获取请求器信息"""
         for component in self.requester_components:
-            api_cls = component.get_python_component_class()
-            api_inst = api_cls(self.ap)
-            await api_inst.initialize()
-            self.requesters[component.metadata.name] = api_inst
+            if component.metadata.name == name:
+                return component.to_plain_dict()
+        return None
 
-        # 尝试从api获取最新的模型信息
-        try:
-            async with aiohttp.ClientSession() as session:
-                async with session.request(
-                    method="GET",
-                    url=FETCH_MODEL_LIST_URL,
-                    # 参数
-                    params={
-                        "version": self.ap.ver_mgr.get_current_version()
-                    },
-                ) as resp:
-                    model_list = (await resp.json())['data']['list']
+    async def invoke_llm(
+        self,
+        query: core_entities.Query,
+        model_uuid: str,
+        messages: list[llm_entities.Message],
+        funcs: list[tools_entities.LLMFunction] = None,
+    ) -> llm_entities.Message:
+        pass
 
-                    for model in model_list:
-
-                        for index, local_model in enumerate(self.ap.llm_models_meta.data['list']):
-                            if model['name'] == local_model['name']:
-                                self.ap.llm_models_meta.data['list'][index] = model
-                                break
-                        else:
-                            self.ap.llm_models_meta.data['list'].append(model)
-
-                    await self.ap.llm_models_meta.dump_config()
-
-        except Exception as e:
-            self.ap.logger.debug(f'获取最新模型列表失败: {e}')
-
-        default_model_info: entities.LLMModelInfo = None
-
-        for model in self.ap.llm_models_meta.data['list']:
-            if model['name'] == 'default':
-                default_model_info = entities.LLMModelInfo(
-                    name=model['name'],
-                    model_name=None,
-                    token_mgr=self.token_mgrs[model['token_mgr']],
-                    requester=self.requesters[model['requester']],
-                    tool_call_supported=model['tool_call_supported'],
-                    vision_supported=model['vision_supported']
-                )
-                break
-
-        for model in self.ap.llm_models_meta.data['list']:
-
-            try:
-
-                model_name = model.get('model_name', default_model_info.model_name)
-                token_mgr = self.token_mgrs[model['token_mgr']] if 'token_mgr' in model else default_model_info.token_mgr
-                req = self.requesters[model['requester']] if 'requester' in model else default_model_info.requester
-                tool_call_supported = model.get('tool_call_supported', default_model_info.tool_call_supported)
-                vision_supported = model.get('vision_supported', default_model_info.vision_supported)
-
-                model_info = entities.LLMModelInfo(
-                    name=model['name'],
-                    model_name=model_name,
-                    token_mgr=token_mgr,
-                    requester=req,
-                    tool_call_supported=tool_call_supported,
-                    vision_supported=vision_supported
-                )
-                self.model_list.append(model_info)
-            
-            except Exception as e:
-                self.ap.logger.error(f"初始化模型 {model['name']} 失败: {type(e)} {e} ,请检查配置文件")
