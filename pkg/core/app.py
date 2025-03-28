@@ -20,11 +20,14 @@ from ..audit.center import v2 as center_mgr
 from ..command import cmdmgr
 from ..plugin import manager as plugin_mgr
 from ..pipeline import pool
-from ..pipeline import controller, stagemgr
+from ..pipeline import controller, stagemgr, pipelinemgr
 from ..utils import version as version_mgr, proxy as proxy_mgr, announce as announce_mgr
 from ..persistence import mgr as persistencemgr
 from ..api.http.controller import main as http_controller
 from ..api.http.service import user as user_service
+from ..api.http.service import model as model_service
+from ..api.http.service import pipeline as pipeline_service
+from ..api.http.service import bot as bot_service
 from ..discover import engine as discover_engine
 from ..utils import logcache, ip
 from . import taskmgr
@@ -82,6 +85,11 @@ class Application:
 
     instance_secret_meta: config_mgr.ConfigManager = None
 
+    pipeline_config_meta_trigger: config_mgr.ConfigManager = None
+    pipeline_config_meta_safety: config_mgr.ConfigManager = None
+    pipeline_config_meta_ai: config_mgr.ConfigManager = None
+    pipeline_config_meta_output: config_mgr.ConfigManager = None
+
     # =========================
 
     ctr_mgr: center_mgr.V2CenterAPI = None
@@ -93,6 +101,8 @@ class Application:
     ctrl: controller.Controller = None
 
     stage_mgr: stagemgr.StageManager = None
+
+    pipeline_mgr: pipelinemgr.PipelineManager = None
 
     ver_mgr: version_mgr.VersionManager = None
 
@@ -111,6 +121,12 @@ class Application:
     # ========= HTTP Services =========
 
     user_service: user_service.UserService = None
+
+    model_service: model_service.ModelsService = None
+
+    pipeline_service: pipeline_service.PipelineService = None
+
+    bot_service: bot_service.BotService = None
 
     def __init__(self):
         pass

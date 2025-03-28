@@ -6,7 +6,7 @@ from .. import stage, app
 from ...utils import version, proxy, announce, platform
 from ...audit.center import v2 as center_v2
 from ...audit import identifier
-from ...pipeline import pool, controller, stagemgr
+from ...pipeline import pool, controller, stagemgr, pipelinemgr
 from ...plugin import manager as plugin_mgr
 from ...command import cmdmgr
 from ...provider.session import sessionmgr as llm_session_mgr
@@ -18,6 +18,9 @@ from ...platform import manager as im_mgr
 from ...persistence import mgr as persistencemgr
 from ...api.http.controller import main as http_controller
 from ...api.http.service import user as user_service
+from ...api.http.service import model as model_service
+from ...api.http.service import pipeline as pipeline_service
+from ...api.http.service import bot as bot_service
 from ...discover import engine as discover_engine
 from ...utils import logcache
 from .. import taskmgr
@@ -116,12 +119,25 @@ class BuildAppStage(stage.BootingStage):
         await stage_mgr.initialize()
         ap.stage_mgr = stage_mgr
 
+        pipeline_mgr = pipelinemgr.PipelineManager(ap)
+        await pipeline_mgr.initialize()
+        ap.pipeline_mgr = pipeline_mgr
+
         http_ctrl = http_controller.HTTPController(ap)
         await http_ctrl.initialize()
         ap.http_ctrl = http_ctrl
 
         user_service_inst = user_service.UserService(ap)
         ap.user_service = user_service_inst
+
+        model_service_inst = model_service.ModelsService(ap)
+        ap.model_service = model_service_inst
+
+        pipeline_service_inst = pipeline_service.PipelineService(ap)
+        ap.pipeline_service = pipeline_service_inst
+
+        bot_service_inst = bot_service.BotService(ap)
+        ap.bot_service = bot_service_inst
 
         ctrl = controller.Controller(ap)
         ap.ctrl = ctrl
