@@ -4,10 +4,12 @@ export default function HomeTitleBar({
   title,
   subtitle,
   helpLink,
+  onMenuToggle,
 }: {
   title: string;
   subtitle: string;
   helpLink: string;
+  onMenuToggle?: () => void;
 }) {
   return (
     <div className={`${styles.titleBarContainer}`}>
@@ -26,6 +28,19 @@ export default function HomeTitleBar({
             </svg>
           </a>
         </span>
+      </div>
+
+      {/* 移动端汉堡菜单按钮 */}
+      <div className={`${styles.menuButton}`} onClick={onMenuToggle}>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          width="24"
+          height="24"
+        >
+          <path d="M3 4H21V6H3V4ZM3 11H21V13H3V11ZM3 18H21V20H3V18Z"></path>
+        </svg>
       </div>
     </div>
   );

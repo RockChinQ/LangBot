@@ -12,6 +12,15 @@
   box-shadow: 0px 2px 8px 0 rgba(0, 0, 0, 0.1);
 }
 
+/* 移动端卡片容器 */
+@media (max-width: 768px) {
+  .cardContainer {
+    height: auto;
+    min-height: 8rem;
+    padding: 0.8rem;
+  }
+}
+
 .iconBasicInfoContainer {
   width: 100%;
   height: 100%;
@@ -22,11 +31,27 @@
   /* background-color: aqua; */
 }
 
+/* 移动端图标和信息容器 */
+@media (max-width: 768px) {
+  .iconBasicInfoContainer {
+    align-items: center;
+  }
+}
+
 .iconImage {
   width: 3.8rem;
   height: 3.8rem;
   margin: 0.2rem;
   border-radius: 50%;
+}
+
+/* 移动端图标 */
+@media (max-width: 768px) {
+  .iconImage {
+    width: 3rem;
+    height: 3rem;
+    margin: 0.1rem;
+  }
 }
 
 .basicInfoContainer {

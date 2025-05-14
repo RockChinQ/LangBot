@@ -10,7 +10,29 @@
   padding-block: 1rem;
   padding-left: 0.4rem;
   user-select: none;
+  transition: transform 0.3s ease, width 0.3s ease;
+  z-index: 10;
   /* box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.1); */
+}
+
+/* 移动端侧边栏 */
+@media (max-width: 768px) {
+  .sidebarContainer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+    max-height: 100vh;
+    transform: translateY(-100%);
+    border-radius: 0 0 1.5rem 1.5rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding-bottom: 1rem;
+  }
+  
+  .sidebarOpen {
+    transform: translateY(0) !important;
+  }
 }
 
 .langbotIconContainer {

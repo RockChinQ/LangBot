@@ -16,6 +16,16 @@
   box-shadow: 0px 2px 8px 0 rgba(0, 0, 0, 0.1);
 }
 
+/* 移动端卡片容器 */
+@media (max-width: 768px) {
+  .cardContainer {
+    height: auto;
+    min-height: 8rem;
+    padding: 0.8rem;
+    flex-direction: column;
+  }
+}
+
 .basicInfoContainer {
   width: 100%;
   height: 100%;
@@ -36,6 +46,13 @@
   font-weight: 500;
 }
 
+/* 移动端名称文本 */
+@media (max-width: 768px) {
+  .basicInfoNameText {
+    font-size: 1.2rem;
+  }
+}
+
 .basicInfoDescriptionText {
   font-size: 0.9rem;
   font-weight: 400;
@@ -45,6 +62,14 @@
   overflow: hidden;
   text-overflow: ellipsis;
   color: #b1b1b1;
+}
+
+/* 移动端描述文本 */
+@media (max-width: 768px) {
+  .basicInfoDescriptionText {
+    font-size: 0.8rem;
+    -webkit-line-clamp: 2;
+  }
 }
 
 .basicInfoLastUpdatedTimeContainer {
@@ -69,6 +94,15 @@
   flex-direction: row;
   gap: 0.5rem;
   width: 5rem;
+}
+
+/* 移动端操作容器 */
+@media (max-width: 768px) {
+  .operationContainer {
+    width: 100%;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+  }
 }
 
 .operationDefaultBadge {

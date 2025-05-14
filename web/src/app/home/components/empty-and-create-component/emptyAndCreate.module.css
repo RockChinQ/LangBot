@@ -32,6 +32,16 @@
   user-select: none;
 }
 
+/* 移动端创建按钮 */
+@media (max-width: 768px) {
+  .emptyCreateButton {
+    width: 160px;
+    height: 40px;
+    font-size: 16px;
+    line-height: 40px;
+  }
+}
+
 .emptyCreateButton:hover {
   background-color: #1b77d2;
 }
@@ -49,6 +59,20 @@
   font-size: 30px;
 }
 
+/* 移动端信息文本 */
+@media (max-width: 768px) {
+  .emptyInfoText {
+    font-size: 22px;
+  }
+}
+
 .emptyInfoSubText {
   font-size: 28px;
+}
+
+/* 移动端子信息文本 */
+@media (max-width: 768px) {
+  .emptyInfoSubText {
+    font-size: 20px;
+  }
 }

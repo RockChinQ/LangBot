@@ -18,3 +18,14 @@
   justify-items: stretch;
   align-items: start;
 }
+
+/* 移动端插件列表容器 */
+@media (max-width: 768px) {
+  .pluginListContainer {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    padding-top: 1rem;
+  }
+}

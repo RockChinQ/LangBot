@@ -8,6 +8,18 @@
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
+  position: relative;
+}
+
+/* 移动端标题栏 */
+@media (max-width: 768px) {
+  .titleBarContainer {
+    padding-top: 0.5rem;
+    height: 3.5rem;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
 }
 
 .titleText {
@@ -15,6 +27,14 @@
   font-size: 1.4rem;
   font-weight: 500;
   color: #585858;
+}
+
+/* 移动端标题文本 */
+@media (max-width: 768px) {
+  .titleText {
+    margin-left: 1rem;
+    font-size: 1.2rem;
+  }
 }
 
 .subtitleText {
@@ -25,8 +45,36 @@
   align-items: center;
 }
 
+/* 移动端副标题文本 */
+@media (max-width: 768px) {
+  .subtitleText {
+    margin-left: 1rem;
+    font-size: 0.7rem;
+    max-width: 60%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
 .helpLink {
   margin-left: 0.2rem;
   font-size: 0.8rem;
   color: #8b8b8b;
+}
+
+/* 汉堡菜单按钮 */
+.menuButton {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .menuButton {
+    display: block;
+    margin-right: 1rem;
+    cursor: pointer;
+    width: 2rem;
+    height: 2rem;
+    color: #585858;
+  }
 }

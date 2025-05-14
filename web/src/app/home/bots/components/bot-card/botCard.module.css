@@ -12,6 +12,15 @@
   box-shadow: 0px 2px 8px 0 rgba(0, 0, 0, 0.1);
 }
 
+/* 移动端卡片容器 */
+@media (max-width: 768px) {
+  .cardContainer {
+    height: auto;
+    min-height: 8rem;
+    padding: 0.8rem;
+  }
+}
+
 .iconBasicInfoContainer {
   width: 100%;
   height: 100%;
@@ -22,11 +31,28 @@
   /* background-color: aqua; */
 }
 
+/* 移动端图标和信息容器 */
+@media (max-width: 768px) {
+  .iconBasicInfoContainer {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
 .iconImage {
   width: 4rem;
   height: 4rem;
   margin: 0.2rem;
   /* border-radius: 50%; */
+}
+
+/* 移动端图标 */
+@media (max-width: 768px) {
+  .iconImage {
+    width: 3rem;
+    height: 3rem;
+    margin: 0.1rem;
+  }
 }
 
 .basicInfoContainer {
@@ -45,10 +71,28 @@
   font-weight: 500;
 }
 
+/* 移动端名称 */
+@media (max-width: 768px) {
+  .basicInfoName {
+    font-size: 1.2rem;
+  }
+}
+
 .basicInfoDescription {
   font-size: 1rem;
   font-weight: 300;
   color: #b1b1b1;
+}
+
+/* 移动端描述 */
+@media (max-width: 768px) {
+  .basicInfoDescription {
+    font-size: 0.9rem;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 .basicInfoAdapterContainer {
@@ -64,10 +108,25 @@
   color: #626262;
 }
 
+/* 移动端适配器图标 */
+@media (max-width: 768px) {
+  .basicInfoAdapterIcon {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
 .basicInfoAdapterLabel {
   font-size: 1.2rem;
   font-weight: 500;
   color: #626262;
+}
+
+/* 移动端适配器标签 */
+@media (max-width: 768px) {
+  .basicInfoAdapterLabel {
+    font-size: 1rem;
+  }
 }
 
 .basicInfoPipelineContainer {
@@ -83,8 +142,23 @@
   margin-top: 0.2rem;
 }
 
+/* 移动端管道图标 */
+@media (max-width: 768px) {
+  .basicInfoPipelineIcon {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
 .basicInfoPipelineLabel {
   font-size: 1.2rem;
   font-weight: 500;
   color: #626262;
+}
+
+/* 移动端管道标签 */
+@media (max-width: 768px) {
+  .basicInfoPipelineLabel {
+    font-size: 1rem;
+  }
 }
