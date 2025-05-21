@@ -86,13 +86,12 @@ const zhHans = {
     string: '字符串',
     number: '数字',
     boolean: '布尔值',
-    extraParametersDescription:
-      '将在请求时附加到请求体中，如 max_tokens, temperature, top_p 等',
     selectModelProvider: '选择模型供应商',
     modelProviderDescription: '请填写供应商向您提供的模型名称',
     selectModel: '请选择模型',
     testSuccess: '测试成功',
     testError: '测试失败，请检查模型配置',
+    llmModels: '对话模型',
   },
   bots: {
     title: '机器人',
@@ -232,6 +231,21 @@ const zhHans = {
     register: '注册',
     initSuccess: '初始化成功 请登录',
     initFailed: '初始化失败：',
+  },
+  embedding: {
+    description: '管理嵌入模型，用于向量化文本',
+    createModel: '创建嵌入模型',
+    editModel: '编辑嵌入模型',
+    getModelListError: '获取嵌入模型列表失败：',
+    embeddingModels: '嵌入模型',
+    extraParametersDescription:
+      '将在请求时附加到请求体中，如 encoding_format, dimensions 等',
+  },
+  llm: {
+    llmModels: '对话模型',
+    description: '管理 LLM 模型，用于对话消息生成',
+    extraParametersDescription:
+      '将在请求时附加到请求体中，如 max_tokens, temperature, top_p 等',
   },
 };
 

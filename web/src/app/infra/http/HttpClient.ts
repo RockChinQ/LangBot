@@ -10,6 +10,9 @@ import {
   ApiRespProviderLLMModels,
   ApiRespProviderLLMModel,
   LLMModel,
+  ApiRespProviderEmbeddingModels,
+  ApiRespProviderEmbeddingModel,
+  EmbeddingModel,
   ApiRespPipelines,
   Pipeline,
   ApiRespPlatformAdapters,
@@ -226,8 +229,10 @@ class HttpClient {
 
   // real api request implementation
   // ============ Provider API ============
-  public getProviderRequesters(): Promise<ApiRespProviderRequesters> {
-    return this.get('/api/v1/provider/requesters');
+  public getProviderRequesters(
+    model_type: string,
+  ): Promise<ApiRespProviderRequesters> {
+    return this.get('/api/v1/provider/requesters', { type: model_type });
   }
 
   public getProviderRequester(name: string): Promise<ApiRespProviderRequester> {
@@ -273,6 +278,39 @@ class HttpClient {
 
   public testLLMModel(uuid: string, model: LLMModel): Promise<object> {
     return this.post(`/api/v1/provider/models/llm/${uuid}/test`, model);
+  }
+
+  // ============ Provider Model Embedding ============
+  public getProviderEmbeddingModels(): Promise<ApiRespProviderEmbeddingModels> {
+    return this.get('/api/v1/provider/models/embedding');
+  }
+
+  public getProviderEmbeddingModel(
+    uuid: string,
+  ): Promise<ApiRespProviderEmbeddingModel> {
+    return this.get(`/api/v1/provider/models/embedding/${uuid}`);
+  }
+
+  public createProviderEmbeddingModel(model: EmbeddingModel): Promise<object> {
+    return this.post('/api/v1/provider/models/embedding', model);
+  }
+
+  public deleteProviderEmbeddingModel(uuid: string): Promise<object> {
+    return this.delete(`/api/v1/provider/models/embedding/${uuid}`);
+  }
+
+  public updateProviderEmbeddingModel(
+    uuid: string,
+    model: EmbeddingModel,
+  ): Promise<object> {
+    return this.put(`/api/v1/provider/models/embedding/${uuid}`, model);
+  }
+
+  public testEmbeddingModel(
+    uuid: string,
+    model: EmbeddingModel,
+  ): Promise<object> {
+    return this.post(`/api/v1/provider/models/embedding/${uuid}/test`, model);
   }
 
   // ============ Pipeline API ============
