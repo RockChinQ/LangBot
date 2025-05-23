@@ -1,9 +1,12 @@
 'use client';
 
-export function BotLogCard() {
+import { BotLog } from '@/app/infra/http/requestParam/bots/GetBotLogsResponse'
+import styles from './botLog.module.css'
+
+export function BotLogCard({ botLog }: { botLog: BotLog }) {
   return (
-    <div>
-      <h1>BotLogCard</h1>
+    <div className={`${styles.botLogCardContainer}`}>
+      <h1>${botLog.text}</h1>
     </div>
   );
 }

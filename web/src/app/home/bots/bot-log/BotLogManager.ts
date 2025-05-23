@@ -1,10 +1,13 @@
 import { httpClient } from '@/app/infra/http/HttpClient';
 import { GetBotLogsRequest } from '@/app/infra/http/requestParam/bots/GetBotLogsRequest';
-import { GetBotLogsResponse } from '@/app/infra/http/requestParam/bots/GetBotLogsResponse';
+import {
+  BotLog,
+  GetBotLogsResponse,
+} from '@/app/infra/http/requestParam/bots/GetBotLogsResponse';
 
 export class BotLogManager {
   private botId: string;
-  private callbacks: ((_: GetBotLogsResponse) => void)[] = [];
+  private callbacks: ((_: BotLog[]) => void)[] = [];
   private intervalIds: number[] = [];
 
   constructor(botId: string) {
@@ -13,14 +16,11 @@ export class BotLogManager {
 
   startListenServerPush() {
     const timerNumber = setInterval(() => {
-      httpClient
-        .getBotLogs(this.botId, {
-          from_index: -1,
-          max_count: 50,
-        })
-        .then((response) => {
-          this.callbacks.forEach((callback) => callback(response));
-        });
+      this.getLogList(-1, 50).then((response) => {
+        this.callbacks.forEach((callback) =>
+          callback(this.parseResponse(response)),
+        );
+      });
     }, 3000);
     this.intervalIds.push(Number(timerNumber));
   }
@@ -29,7 +29,7 @@ export class BotLogManager {
     this.intervalIds.forEach((id) => clearInterval(id));
   }
 
-  subscribeLogPush(callback: () => void) {
+  subscribeLogPush(callback: (_: BotLog[]) => void) {
     this.callbacks.push(callback);
   }
 
@@ -44,18 +44,25 @@ export class BotLogManager {
   /**
    * 获取日志页的基本信息
    */
-  getLogPageInfo(next: number, count: number = 50) {
-    httpClient
-      .getBotLogs(this.botId, {
-        from_index: next,
-        max_count: count,
-      })
-      .then((response) => {
-        this.callbacks.forEach((callback) => callback(response));
-      });
+  private getLogList(next: number, count: number = 50) {
+    return httpClient.getBotLogs(this.botId, {
+      from_index: next,
+      max_count: count,
+    });
+  }
+
+  async loadFirstPage() {
+    return this.parseResponse(await this.getLogList(-1));
+  }
+
+  async loadMore(position: number) {
+    return this.parseResponse(await this.getLogList(position));
   }
 
   getLogVOList() {}
 
-  private parseResponse(httpResponse: GetBotLogsResponse) {}
+  private parseResponse(httpResponse: GetBotLogsResponse): BotLog[] {
+    console.log("parse bot log: ", httpResponse)
+    return httpResponse.logs;
+  }
 }

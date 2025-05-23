@@ -1,0 +1,21 @@
+.botLogListContainer {
+    width: 100%;
+    height: 10rem;
+    max-height: 10rem;
+    overflow-y: scroll;
+    background-color: #1b77d2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.botLogCardContainer {
+    width: 100%;
+    background-color: #fff;
+    border-radius: 10px;
+    border: 1px solid #CBD5E1;
+    padding: 1.2rem;
+    margin-bottom: 1rem;
+    cursor: pointer;
+}

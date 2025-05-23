@@ -123,7 +123,7 @@ export default function BotConfigPage() {
             <DialogTitle>{t('bots.botLogTitle')}</DialogTitle>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto px-6">
-            <BotLogListComponent/>
+            <BotLogListComponent botId={nowSelectedBotLog || ''} />
           </div>
         </DialogContent>
       </Dialog>

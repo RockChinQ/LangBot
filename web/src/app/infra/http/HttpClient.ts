@@ -30,8 +30,8 @@ import {
   GetPipelineMetadataResponseData,
   AsyncTask,
 } from '@/app/infra/entities/api';
-import { GetBotLogsRequest } from '@/app/infra/http/requestParam/bots/GetBotLogsRequest'
-import { GetBotLogsResponse } from '@/app/infra/http/requestParam/bots/GetBotLogsResponse'
+import { GetBotLogsRequest } from '@/app/infra/http/requestParam/bots/GetBotLogsRequest';
+import { GetBotLogsResponse } from '@/app/infra/http/requestParam/bots/GetBotLogsResponse';
 
 type JSONValue = string | number | boolean | JSONObject | JSONArray | null;
 interface JSONObject {
@@ -459,7 +459,7 @@ class HttpClient {
   }
 }
 
-export const httpClient = new HttpClient("https://version-4.langbot.dev");
+export const httpClient = new HttpClient('https://event-log.langbot.dev');
 // export const httpClient = new HttpClient('http://localhost:5300');
 // export const httpClient = new HttpClient('/');
 
