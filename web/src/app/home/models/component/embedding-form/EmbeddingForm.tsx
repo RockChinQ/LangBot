@@ -1,8 +1,8 @@
-import { ICreateLLMField } from '@/app/home/models/component/ICreateLLMField';
+import { ICreateEmbeddingField } from '@/app/home/models/component/ICreateEmbeddingField';
 import { useEffect, useState } from 'react';
 import { IChooseRequesterEntity } from '@/app/home/models/component/ChooseRequesterEntity';
 import { httpClient } from '@/app/infra/http/HttpClient';
-import { LLMModel } from '@/app/infra/entities/api';
+import { EmbeddingModel } from '@/app/infra/entities/api';
 import { UUID } from 'uuidjs';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -37,7 +37,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { i18nObj } from '@/i18n/I18nProvider';
 
@@ -77,22 +76,21 @@ const getFormSchema = (t: (key: string) => string) =>
       .min(1, { message: t('models.modelProviderRequired') }),
     url: z.string().min(1, { message: t('models.requestURLRequired') }),
     api_key: z.string().min(1, { message: t('models.apiKeyRequired') }),
-    abilities: z.array(z.string()),
     extra_args: z.array(getExtraArgSchema(t)).optional(),
   });
 
-export default function LLMForm({
+export default function EmbeddingForm({
   editMode,
-  initLLMId,
+  initEmbeddingId,
   onFormSubmit,
   onFormCancel,
-  onLLMDeleted,
+  onEmbeddingDeleted,
 }: {
   editMode: boolean;
-  initLLMId?: string;
+  initEmbeddingId?: string;
   onFormSubmit: () => void;
   onFormCancel: () => void;
-  onLLMDeleted: () => void;
+  onEmbeddingDeleted: () => void;
 }) {
   const { t } = useTranslation();
   const formSchema = getFormSchema(t);
@@ -104,7 +102,6 @@ export default function LLMForm({
       model_provider: '',
       url: '',
       api_key: 'sk-xxxxx',
-      abilities: [],
       extra_args: [],
     },
   });
@@ -114,16 +111,6 @@ export default function LLMForm({
   >([]);
 
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
-  const abilityOptions: { label: string; value: string }[] = [
-    {
-      label: t('models.visionAbility'),
-      value: 'vision',
-    },
-    {
-      label: t('models.functionCallAbility'),
-      value: 'func_call',
-    },
-  ];
   const [requesterNameList, setRequesterNameList] = useState<
     IChooseRequesterEntity[]
   >([]);
@@ -131,22 +118,16 @@ export default function LLMForm({
     string[]
   >([]);
   const [modelTesting, setModelTesting] = useState(false);
-  const [currentModelProvider, setCurrentModelProvider] = useState('');
 
   useEffect(() => {
-    initLLMModelFormComponent().then(() => {
-      if (editMode && initLLMId) {
-        getLLMConfig(initLLMId).then((val) => {
+    initEmbeddingModelFormComponent().then(() => {
+      if (editMode && initEmbeddingId) {
+        getEmbeddingConfig(initEmbeddingId).then((val) => {
           form.setValue('name', val.name);
           form.setValue('model_provider', val.model_provider);
-          setCurrentModelProvider(val.model_provider);
+          // setCurrentModelProvider(val.model_provider);
           form.setValue('url', val.url);
           form.setValue('api_key', val.api_key);
-          form.setValue(
-            'abilities',
-            val.abilities as ('vision' | 'func_call')[],
-          );
-          // 转换extra_args为新格式
           if (val.extra_args) {
             const args = val.extra_args.map((arg) => {
               const [key, value] = arg.split(':');
@@ -196,8 +177,9 @@ export default function LLMForm({
     form.setValue('extra_args', newArgs);
   };
 
-  async function initLLMModelFormComponent() {
-    const requesterNameList = await httpClient.getProviderRequesters('llm');
+  async function initEmbeddingModelFormComponent() {
+    const requesterNameList =
+      await httpClient.getProviderRequesters('text-embedding');
     setRequesterNameList(
       requesterNameList.requesters.map((item) => {
         return {
@@ -219,20 +201,21 @@ export default function LLMForm({
     );
   }
 
-  async function getLLMConfig(id: string): Promise<ICreateLLMField> {
-    const llmModel = await httpClient.getProviderLLMModel(id);
+  async function getEmbeddingConfig(
+    id: string,
+  ): Promise<ICreateEmbeddingField> {
+    const embeddingModel = await httpClient.getProviderEmbeddingModel(id);
 
     const fakeExtraArgs = [];
-    const extraArgs = llmModel.model.extra_args as Record<string, string>;
+    const extraArgs = embeddingModel.model.extra_args as Record<string, string>;
     for (const key in extraArgs) {
       fakeExtraArgs.push(`${key}:${extraArgs[key]}`);
     }
     return {
-      name: llmModel.model.name,
-      model_provider: llmModel.model.requester,
-      url: llmModel.model.requester_config?.base_url,
-      api_key: llmModel.model.api_keys[0],
-      abilities: llmModel.model.abilities || [],
+      name: embeddingModel.model.name,
+      model_provider: embeddingModel.model.requester,
+      url: embeddingModel.model.requester_config?.base_url,
+      api_key: embeddingModel.model.api_keys[0],
       extra_args: fakeExtraArgs,
     };
   }
@@ -251,8 +234,8 @@ export default function LLMForm({
       },
     );
 
-    const llmModel: LLMModel = {
-      uuid: editMode ? initLLMId || '' : UUID.generate(),
+    const embeddingModel: EmbeddingModel = {
+      uuid: editMode ? initEmbeddingId || '' : UUID.generate(),
       name: value.name,
       description: '',
       requester: value.model_provider,
@@ -262,23 +245,22 @@ export default function LLMForm({
       },
       extra_args: extraArgsObj,
       api_keys: [value.api_key],
-      abilities: value.abilities,
     };
 
     if (editMode) {
-      onSaveEdit(llmModel).then(() => {
+      onSaveEdit(embeddingModel).then(() => {
         form.reset();
       });
     } else {
-      onCreateLLM(llmModel).then(() => {
+      onCreateEmbedding(embeddingModel).then(() => {
         form.reset();
       });
     }
   }
 
-  async function onCreateLLM(llmModel: LLMModel) {
+  async function onCreateEmbedding(embeddingModel: EmbeddingModel) {
     try {
-      await httpClient.createProviderLLMModel(llmModel);
+      await httpClient.createProviderEmbeddingModel(embeddingModel);
       onFormSubmit();
       toast.success(t('models.createSuccess'));
     } catch (err) {
@@ -286,9 +268,12 @@ export default function LLMForm({
     }
   }
 
-  async function onSaveEdit(llmModel: LLMModel) {
+  async function onSaveEdit(embeddingModel: EmbeddingModel) {
     try {
-      await httpClient.updateProviderLLMModel(initLLMId || '', llmModel);
+      await httpClient.updateProviderEmbeddingModel(
+        initEmbeddingId || '',
+        embeddingModel,
+      );
       onFormSubmit();
       toast.success(t('models.saveSuccess'));
     } catch (err) {
@@ -297,11 +282,11 @@ export default function LLMForm({
   }
 
   function deleteModel() {
-    if (initLLMId) {
+    if (initEmbeddingId) {
       httpClient
-        .deleteProviderLLMModel(initLLMId)
+        .deleteProviderEmbeddingModel(initEmbeddingId)
         .then(() => {
-          onLLMDeleted();
+          onEmbeddingDeleted();
           toast.success(t('models.deleteSuccess'));
         })
         .catch((err) => {
@@ -310,10 +295,10 @@ export default function LLMForm({
     }
   }
 
-  function testLLMModelInForm() {
+  function testEmbeddingModelInForm() {
     setModelTesting(true);
     httpClient
-      .testLLMModel('_', {
+      .testEmbeddingModel('_', {
         uuid: '',
         name: form.getValues('name'),
         description: '',
@@ -323,8 +308,6 @@ export default function LLMForm({
           timeout: 120,
         },
         api_keys: [form.getValues('api_key')],
-        abilities: form.getValues('abilities'),
-        extra_args: form.getValues('extra_args'),
       })
       .then((res) => {
         console.log(res);
@@ -410,7 +393,7 @@ export default function LLMForm({
                     <Select
                       onValueChange={(value) => {
                         field.onChange(value);
-                        setCurrentModelProvider(value);
+                        // setCurrentModelProvider(value);
                         const index = requesterNameList.findIndex(
                           (item) => item.value === value,
                         );
@@ -458,78 +441,18 @@ export default function LLMForm({
               )}
             />
 
-            {!['lmstudio-chat-completions', 'ollama-chat'].includes(
-              currentModelProvider,
-            ) && (
-              <FormField
-                control={form.control}
-                name="api_key"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      {t('models.apiKey')}
-                      <span className="text-red-500">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-
             <FormField
               control={form.control}
-              name="abilities"
-              render={() => (
+              name="api_key"
+              render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('models.abilities')}</FormLabel>
-                  <div className="mb-0">
-                    <FormDescription>
-                      {t('models.selectModelAbilities')}
-                    </FormDescription>
-                  </div>
-                  {abilityOptions.map((item) => (
-                    <FormField
-                      key={item.value}
-                      control={form.control}
-                      name="abilities"
-                      render={({ field }) => {
-                        return (
-                          <FormItem
-                            key={item.value}
-                            className="flex flex-row items-start space-x-1 space-y-0"
-                          >
-                            <FormControl>
-                              <Checkbox
-                                checked={
-                                  Array.isArray(field.value) &&
-                                  field.value?.includes(item.value)
-                                }
-                                onCheckedChange={(checked) => {
-                                  return checked
-                                    ? field.onChange([
-                                        ...(field.value || []),
-                                        item.value,
-                                      ])
-                                    : field.onChange(
-                                        field.value?.filter(
-                                          (value: string) =>
-                                            value !== item.value,
-                                        ),
-                                      );
-                                }}
-                              />
-                            </FormControl>
-                            <FormLabel className="font-normal">
-                              {item.label}
-                            </FormLabel>
-                          </FormItem>
-                        );
-                      }}
-                    />
-                  ))}
+                  <FormLabel>
+                    {t('models.apiKey')}
+                    <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -596,7 +519,7 @@ export default function LLMForm({
                 </Button>
               </div>
               <FormDescription>
-                {t('llm.extraParametersDescription')}
+                {t('embedding.extraParametersDescription')}
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -619,7 +542,7 @@ export default function LLMForm({
             <Button
               type="button"
               variant="outline"
-              onClick={() => testLLMModelInForm()}
+              onClick={() => testEmbeddingModelInForm()}
               disabled={modelTesting}
             >
               {t('common.test')}
