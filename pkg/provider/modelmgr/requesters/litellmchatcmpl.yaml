@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: LLMAPIRequester
+metadata:
+  name: litellm-chat-completions
+  label:
+    en_US: LiteLLM
+    zh_CN: LiteLLM
+  description:
+    en_US: Unified interface for multiple LLM providers using LiteLLM
+    zh_CN: 使用LiteLLM统一接口支持多种LLM提供商
+  icon: openai.svg
+spec:
+  config:
+    - name: provider
+      label:
+        en_US: Provider
+        zh_CN: 提供商
+      type: string
+      required: false
+      default: ""
+      description:
+        en_US: LLM provider (e.g., azure, anthropic, google, etc.). Leave empty to use model name directly.
+        zh_CN: LLM提供商（如azure, anthropic, google等）。留空则直接使用模型名称。
+    - name: api_base
+      label:
+        en_US: API Base URL
+        zh_CN: API基础URL
+      type: string
+      required: false
+      default: ""
+      description:
+        en_US: Base URL for the API (if needed)
+        zh_CN: API的基础URL（如需要）
+    - name: api_version
+      label:
+        en_US: API Version
+        zh_CN: API版本
+      type: string
+      required: false
+      default: ""
+      description:
+        en_US: API version (if needed)
+        zh_CN: API版本（如需要）
+    - name: timeout
+      label:
+        en_US: Timeout
+        zh_CN: 超时时间
+      type: integer
+      required: true
+      default: 120
+      description:
+        en_US: Request timeout in seconds
+        zh_CN: 请求超时时间（秒）
+execution:
+  python:
+    path: ./litellmchatcmpl.py
+    attr: LiteLLMChatCompletions
