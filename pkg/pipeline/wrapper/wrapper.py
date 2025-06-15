@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import typing
 
-
-from ...core import entities as core_entities
 from .. import entities
 from .. import stage
 from ...plugin import events
 from ...platform.types import message as platform_message
+import langbot_plugin.api.entities.builtin.pipeline.query as pipeline_query
 
 
 @stage.stage_class('ResponseWrapper')
@@ -25,7 +24,7 @@ class ResponseWrapper(stage.PipelineStage):
 
     async def process(
         self,
-        query: core_entities.Query,
+        query: pipeline_query.Query,
         stage_inst_name: str,
     ) -> typing.AsyncGenerator[entities.StageProcessResult, None]:
         """处理"""

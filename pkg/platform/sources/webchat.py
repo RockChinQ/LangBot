@@ -44,13 +44,14 @@ class WebChatAdapter(msadapter.MessagePlatformAdapter):
     webchat_person_session: WebChatSession
     webchat_group_session: WebChatSession
 
+    ap: app.Application  # set by bot manager
+
     listeners: typing.Dict[
         typing.Type[platform_events.Event],
         typing.Callable[[platform_events.Event, msadapter.MessagePlatformAdapter], None],
     ] = {}
 
-    def __init__(self, config: dict, ap: app.Application, logger: EventLogger):
-        self.ap = ap
+    def __init__(self, config: dict, logger: EventLogger):
         self.logger = logger
         self.config = config
 

@@ -9,7 +9,6 @@ from libs.slack_api.api import SlackClient
 from pkg.platform.adapter import MessagePlatformAdapter
 from pkg.platform.types import events as platform_events, message as platform_message
 from libs.slack_api.slackevent import SlackEvent
-from pkg.core import app
 from .. import adapter
 from ..types import entities as platform_entities
 from ...command.errors import ParamNotEnoughError
@@ -86,15 +85,13 @@ class SlackEventConverter(adapter.EventConverter):
 
 class SlackAdapter(adapter.MessagePlatformAdapter):
     bot: SlackClient
-    ap: app.Application
     bot_account_id: str
     message_converter: SlackMessageConverter = SlackMessageConverter()
     event_converter: SlackEventConverter = SlackEventConverter()
     config: dict
 
-    def __init__(self, config: dict, ap: app.Application, logger: EventLogger):
+    def __init__(self, config: dict, logger: EventLogger):
         self.config = config
-        self.ap = ap
         self.logger = logger
         required_keys = [
             'bot_token',
@@ -104,7 +101,9 @@ class SlackAdapter(adapter.MessagePlatformAdapter):
         if missing_keys:
             raise ParamNotEnoughError('Slack机器人缺少相关配置项，请查看文档或联系管理员')
 
-        self.bot = SlackClient(bot_token=self.config['bot_token'], signing_secret=self.config['signing_secret'], logger=self.logger)
+        self.bot = SlackClient(
+            bot_token=self.config['bot_token'], signing_secret=self.config['signing_secret'], logger=self.logger
+        )
 
     async def reply_message(
         self,
@@ -139,8 +138,8 @@ class SlackAdapter(adapter.MessagePlatformAdapter):
             self.bot_account_id = 'SlackBot'
             try:
                 return await callback(await self.event_converter.target2yiri(event, self.bot), self)
-            except Exception as e:
-                await self.logger.error(f"Error in slack callback: {traceback.format_exc()}")
+            except Exception:
+                await self.logger.error(f'Error in slack callback: {traceback.format_exc()}')
 
         if event_type == platform_events.FriendMessage:
             self.bot.on_message('im')(on_message)

@@ -3,15 +3,14 @@ from __future__ import annotations
 # MessageSource的适配器
 import typing
 import abc
+import pydantic
 
-
-from ..core import app
 from .types import message as platform_message
 from .types import events as platform_events
 from .logger import EventLogger
 
 
-class MessagePlatformAdapter(metaclass=abc.ABCMeta):
+class MessagePlatformAdapter(pydantic.BaseModel, metaclass=abc.ABCMeta):
     """消息平台适配器基类"""
 
     name: str
@@ -21,11 +20,9 @@ class MessagePlatformAdapter(metaclass=abc.ABCMeta):
 
     config: dict
 
-    ap: app.Application
+    logger: EventLogger = pydantic.Field(exclude=True)
 
-    logger: EventLogger
-
-    def __init__(self, config: dict, ap: app.Application, logger: EventLogger):
+    def __init__(self, config: dict, logger: EventLogger):
         """初始化适配器
 
         Args:
@@ -33,7 +30,6 @@ class MessagePlatformAdapter(metaclass=abc.ABCMeta):
             ap (app.Application): 应用上下文
         """
         self.config = config
-        self.ap = ap
         self.logger = logger
 
     async def send_message(self, target_type: str, target_id: str, message: platform_message.MessageChain):

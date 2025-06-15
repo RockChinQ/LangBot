@@ -11,16 +11,16 @@ import threading
 import quart
 import aiohttp
 
-from .. import adapter
-from ...core import app
-from ..types import message as platform_message
-from ..types import events as platform_events
-from ..types import entities as platform_entities
-from ...utils import image
+from ... import adapter
+from ....core import app
+from ...types import message as platform_message
+from ...types import events as platform_events
+from ...types import entities as platform_entities
+from ....utils import image
 import xml.etree.ElementTree as ET
 from typing import Optional, Tuple
 from functools import partial
-from ..logger import EventLogger
+from ...logger import EventLogger
 
 
 class GewechatMessageConverter(adapter.MessageConverter):
@@ -491,7 +491,7 @@ class GeWeChatAdapter(adapter.MessagePlatformAdapter):
         async def gewechat_callback():
             data = await quart.request.json
             # print(json.dumps(data, indent=4, ensure_ascii=False))
-            self.ap.logger.debug(f'Gewechat callback event: {data}')
+            await self.logger.debug(f'Gewechat callback event: {data}')
 
             if 'data' in data:
                 data['Data'] = data['data']
@@ -601,7 +601,7 @@ class GeWeChatAdapter(adapter.MessagePlatformAdapter):
             if handler := handler_map.get(msg['type']):
                 handler(msg)
             else:
-                self.ap.logger.warning(f'未处理的消息类型: {msg["type"]}')
+                await self.logger.warning(f'未处理的消息类型: {msg["type"]}')
                 continue
 
     async def send_message(self, target_type: str, target_id: str, message: platform_message.MessageChain):
@@ -656,9 +656,7 @@ class GeWeChatAdapter(adapter.MessagePlatformAdapter):
 
             self.config['app_id'] = app_id
 
-            self.ap.logger.info(f'Gewechat 登录成功，app_id: {app_id}')
-
-            self.ap.platform_mgr.write_back_config('gewechat', self, self.config)
+            print(f'Gewechat 登录成功，app_id: {app_id}')
 
             # 获取 nickname
             profile = self.bot.get_profile(self.config['app_id'])

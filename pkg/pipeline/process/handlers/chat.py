@@ -6,13 +6,15 @@ import traceback
 
 from .. import handler
 from ... import entities
-from ....core import entities as core_entities
 from ....provider import runner as runner_module
 from ....plugin import events
 
 from ....platform.types import message as platform_message
 from ....utils import importutil
 from ....provider import runners
+import langbot_plugin.api.entities.builtin.provider.session as provider_session
+import langbot_plugin.api.entities.builtin.pipeline.query as pipeline_query
+
 
 importutil.import_modules_in_pkg(runners)
 
@@ -20,7 +22,7 @@ importutil.import_modules_in_pkg(runners)
 class ChatMessageHandler(handler.MessageHandler):
     async def handle(
         self,
-        query: core_entities.Query,
+        query: pipeline_query.Query,
     ) -> typing.AsyncGenerator[entities.StageProcessResult, None]:
         """处理"""
         # 调API
@@ -29,7 +31,7 @@ class ChatMessageHandler(handler.MessageHandler):
         # 触发插件事件
         event_class = (
             events.PersonNormalMessageReceived
-            if query.launcher_type == core_entities.LauncherTypes.PERSON
+            if query.launcher_type == provider_session.LauncherTypes.PERSON
             else events.GroupNormalMessageReceived
         )
 

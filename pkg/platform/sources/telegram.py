@@ -10,10 +10,7 @@ import traceback
 import base64
 import aiohttp
 
-from lark_oapi.api.im.v1 import *
-
 from .. import adapter
-from ...core import app
 from ..types import message as platform_message
 from ..types import events as platform_events
 from ..types import entities as platform_entities
@@ -141,16 +138,14 @@ class TelegramAdapter(adapter.MessagePlatformAdapter):
     event_converter: TelegramEventConverter = TelegramEventConverter()
 
     config: dict
-    ap: app.Application
 
     listeners: typing.Dict[
         typing.Type[platform_events.Event],
         typing.Callable[[platform_events.Event, adapter.MessagePlatformAdapter], None],
     ] = {}
 
-    def __init__(self, config: dict, ap: app.Application, logger: EventLogger):
+    def __init__(self, config: dict, logger: EventLogger):
         self.config = config
-        self.ap = ap
         self.logger = logger
 
         async def telegram_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -160,8 +155,8 @@ class TelegramAdapter(adapter.MessagePlatformAdapter):
             try:
                 lb_event = await self.event_converter.target2yiri(update, self.bot, self.bot_account_id)
                 await self.listeners[type(lb_event)](lb_event, self)
-            except Exception as e:
-                await self.logger.error(f"Error in telegram callback: {traceback.format_exc()}")
+            except Exception:
+                await self.logger.error(f'Error in telegram callback: {traceback.format_exc()}')
 
         self.application = ApplicationBuilder().token(self.config['token']).build()
         self.bot = self.application.bot

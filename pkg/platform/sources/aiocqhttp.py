@@ -7,7 +7,6 @@ import datetime
 import aiocqhttp
 
 from .. import adapter
-from ...core import app
 from ..types import message as platform_message
 from ..types import events as platform_events
 from ..types import entities as platform_entities
@@ -16,7 +15,6 @@ from ..logger import EventLogger
 
 
 class AiocqhttpMessageConverter(adapter.MessageConverter):
-
     @staticmethod
     async def yiri2target(
         message_chain: platform_message.MessageChain,
@@ -71,34 +69,31 @@ class AiocqhttpMessageConverter(adapter.MessageConverter):
         return msg_list, msg_id, msg_time
 
     @staticmethod
-    async def target2yiri(message: str, message_id: int = -1,bot=None):
-        # print(message)
+    async def target2yiri(message: str, message_id: int = -1, bot=None):
         message = aiocqhttp.Message(message)
 
         async def process_message_data(msg_data, reply_list):
-            if msg_data["type"] == "image":
-                image_base64, image_format = await image.qq_image_url_to_base64(msg_data["data"]['url'])
-                reply_list.append(
-                    platform_message.Image(base64=f'data:image/{image_format};base64,{image_base64}'))
+            if msg_data['type'] == 'image':
+                image_base64, image_format = await image.qq_image_url_to_base64(msg_data['data']['url'])
+                reply_list.append(platform_message.Image(base64=f'data:image/{image_format};base64,{image_base64}'))
 
-            elif msg_data["type"] == "text":
-                reply_list.append(platform_message.Plain(text=msg_data["data"]["text"]))
+            elif msg_data['type'] == 'text':
+                reply_list.append(platform_message.Plain(text=msg_data['data']['text']))
 
-            elif msg_data["type"] == "forward":  # 这里来应该传入转发消息组，暂时传入qoute
-                for forward_msg_datas in msg_data["data"]["content"]:
-                    for forward_msg_data in forward_msg_datas["message"]:
+            elif msg_data['type'] == 'forward':  # 这里来应该传入转发消息组，暂时传入qoute
+                for forward_msg_datas in msg_data['data']['content']:
+                    for forward_msg_data in forward_msg_datas['message']:
                         await process_message_data(forward_msg_data, reply_list)
 
-            elif msg_data["type"] == "at":
-                if msg_data["data"]['qq'] == 'all':
+            elif msg_data['type'] == 'at':
+                if msg_data['data']['qq'] == 'all':
                     reply_list.append(platform_message.AtAll())
                 else:
                     reply_list.append(
                         platform_message.At(
-                            target=msg_data["data"]['qq'],
+                            target=msg_data['data']['qq'],
                         )
                     )
-
 
         yiri_msg_list = []
 
@@ -128,14 +123,15 @@ class AiocqhttpMessageConverter(adapter.MessageConverter):
                 #     await process_message_data(msg_data, yiri_msg_list)
                 pass
 
-
             elif msg.type == 'reply':  # 此处处理引用消息传入Qoute
-                msg_datas = await bot.get_msg(message_id=msg.data["id"])
+                msg_datas = await bot.get_msg(message_id=msg.data['id'])
 
-                for msg_data in msg_datas["message"]:
+                for msg_data in msg_datas['message']:
                     await process_message_data(msg_data, reply_list)
 
-                reply_msg = platform_message.Quote(message_id=msg.data["id"],sender_id=msg_datas["user_id"],origin=reply_list)
+                reply_msg = platform_message.Quote(
+                    message_id=msg.data['id'], sender_id=msg_datas['user_id'], origin=reply_list
+                )
                 yiri_msg_list.append(reply_msg)
 
             elif msg.type == 'file':
@@ -147,20 +143,10 @@ class AiocqhttpMessageConverter(adapter.MessageConverter):
                 file_url = file_data.get('file_url')
                 file_size = file_data.get('file_size')
                 yiri_msg_list.append(platform_message.File(id=file_id, name=file_name,url=file_url,size=file_size))
-
-
-
-
-
-
-
-
-
+        
         chain = platform_message.MessageChain(yiri_msg_list)
 
         return chain
-
-
 
 
 class AiocqhttpEventConverter(adapter.EventConverter):
@@ -169,11 +155,8 @@ class AiocqhttpEventConverter(adapter.EventConverter):
         return event.source_platform_object
 
     @staticmethod
-    async def target2yiri(event: aiocqhttp.Event,bot=None):
-
-        yiri_chain = await AiocqhttpMessageConverter.target2yiri(event.message, event.message_id,bot)
-
-
+    async def target2yiri(event: aiocqhttp.Event, bot=None):
+        yiri_chain = await AiocqhttpMessageConverter.target2yiri(event.message, event.message_id, bot)
 
         if event.message_type == 'group':
             permission = 'MEMBER'
@@ -226,11 +209,9 @@ class AiocqhttpAdapter(adapter.MessagePlatformAdapter):
 
     config: dict
 
-    ap: app.Application
-
     on_websocket_connection_event_cache: typing.List[typing.Callable[[aiocqhttp.Event], None]] = []
 
-    def __init__(self, config: dict, ap: app.Application, logger: EventLogger):
+    def __init__(self, config: dict, logger: EventLogger):
         self.config = config
         self.logger = logger
 
@@ -240,7 +221,6 @@ class AiocqhttpAdapter(adapter.MessagePlatformAdapter):
 
         self.config['shutdown_trigger'] = shutdown_trigger_placeholder
 
-        self.ap = ap
         self.on_websocket_connection_event_cache = []
 
         if 'access-token' in config:
@@ -282,7 +262,7 @@ class AiocqhttpAdapter(adapter.MessagePlatformAdapter):
         async def on_message(event: aiocqhttp.Event):
             self.bot_account_id = event.self_id
             try:
-                return await callback(await self.event_converter.target2yiri(event,self.bot), self)
+                return await callback(await self.event_converter.target2yiri(event, self.bot), self)
             except Exception:
                 await self.logger.error(f'Error in on_message: {traceback.format_exc()}')
                 traceback.print_exc()

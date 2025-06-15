@@ -10,14 +10,14 @@ import botpy
 import botpy.message as botpy_message
 import botpy.types.message as botpy_message_type
 
-from .. import adapter as adapter_model
-from ...pipeline.longtext.strategies import forward
-from ...core import app
-from ...config import manager as cfg_mgr
-from ...platform.types import entities as platform_entities
-from ...platform.types import events as platform_events
-from ...platform.types import message as platform_message
-from ..logger import EventLogger
+from ... import adapter as adapter_model
+from ....pipeline.longtext.strategies import forward
+from ....core import app
+from ....config import manager as cfg_mgr
+from ...types import entities as platform_entities
+from ...types import events as platform_events
+from ...types import message as platform_message
+from ...logger import EventLogger
 
 
 class OfficialGroupMessage(platform_events.GroupMessage):
@@ -501,7 +501,7 @@ class OfficialAdapter(adapter_model.MessagePlatformAdapter):
             for event_handler in event_handler_mapping[event_type]:
                 setattr(self.bot, event_handler, wrapper)
         except Exception as e:
-            self.logger.error(f"Error in qqbotpy callback: {traceback.format_exc()}")
+            self.logger.error(f'Error in qqbotpy callback: {traceback.format_exc()}')
             raise e
 
     def unregister_listener(
@@ -519,7 +519,7 @@ class OfficialAdapter(adapter_model.MessagePlatformAdapter):
 
         self.cfg['ret_coro'] = True
 
-        self.ap.logger.info('运行 QQ 官方适配器')
+        await self.logger.info('运行 QQ 官方适配器')
         await (await self.bot.start(**self.cfg))
 
     async def kill(self) -> bool:

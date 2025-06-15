@@ -12,7 +12,6 @@ import datetime
 import aiohttp
 
 from .. import adapter
-from ...core import app
 from ..types import message as platform_message
 from ..types import events as platform_events
 from ..types import entities as platform_entities
@@ -161,8 +160,6 @@ class DiscordAdapter(adapter.MessagePlatformAdapter):
 
     config: dict
 
-    ap: app.Application
-
     message_converter: DiscordMessageConverter = DiscordMessageConverter()
     event_converter: DiscordEventConverter = DiscordEventConverter()
 
@@ -171,9 +168,8 @@ class DiscordAdapter(adapter.MessagePlatformAdapter):
         typing.Callable[[platform_events.Event, adapter.MessagePlatformAdapter], None],
     ] = {}
 
-    def __init__(self, config: dict, ap: app.Application, logger: EventLogger):
+    def __init__(self, config: dict, logger: EventLogger):
         self.config = config
-        self.ap = ap
         self.logger = logger
 
         self.bot_account_id = self.config['client_id']

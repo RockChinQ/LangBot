@@ -10,7 +10,6 @@ from libs.official_account_api.oaevent import OAEvent
 from libs.official_account_api.api import OAClient
 from libs.official_account_api.api import OAClientForLongerResponse
 from .. import adapter
-from ...core import app
 from ..types import entities as platform_entities
 from ...command.errors import ParamNotEnoughError
 from ..logger import EventLogger
@@ -58,15 +57,13 @@ class OAEventConverter(adapter.EventConverter):
 
 class OfficialAccountAdapter(adapter.MessagePlatformAdapter):
     bot: OAClient | OAClientForLongerResponse
-    ap: app.Application
     bot_account_id: str
     message_converter: OAMessageConverter = OAMessageConverter()
     event_converter: OAEventConverter = OAEventConverter()
     config: dict
 
-    def __init__(self, config: dict, ap: app.Application, logger: EventLogger):
+    def __init__(self, config: dict, logger: EventLogger):
         self.config = config
-        self.ap = ap
         self.logger = logger
 
         required_keys = [
@@ -125,8 +122,8 @@ class OfficialAccountAdapter(adapter.MessagePlatformAdapter):
             self.bot_account_id = event.receiver_id
             try:
                 return await callback(await self.event_converter.target2yiri(event), self)
-            except Exception as e:
-                await self.logger.error(f"Error in officialaccount callback: {traceback.format_exc()}")
+            except Exception:
+                await self.logger.error(f'Error in officialaccount callback: {traceback.format_exc()}')
 
         if event_type == platform_events.FriendMessage:
             self.bot.on_message('text')(on_message)

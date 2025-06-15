@@ -17,6 +17,8 @@ from ..entity.persistence import bot as persistence_bot
 
 from .logger import EventLogger
 
+import langbot_plugin.api.entities.builtin.provider.session as provider_session
+
 # 处理 3.4 移除了 YiriMirai 之后，插件的兼容性问题
 from . import types as mirai
 
@@ -71,7 +73,7 @@ class RuntimeBot:
 
             await self.ap.query_pool.add_query(
                 bot_uuid=self.bot_entity.uuid,
-                launcher_type=core_entities.LauncherTypes.PERSON,
+                launcher_type=provider_session.LauncherTypes.PERSON,
                 launcher_id=event.sender.id,
                 sender_id=event.sender.id,
                 message_event=event,
@@ -96,7 +98,7 @@ class RuntimeBot:
 
             await self.ap.query_pool.add_query(
                 bot_uuid=self.bot_entity.uuid,
-                launcher_type=core_entities.LauncherTypes.GROUP,
+                launcher_type=provider_session.LauncherTypes.GROUP,
                 launcher_id=event.group.id,
                 sender_id=event.sender.id,
                 message_event=event,
@@ -170,9 +172,9 @@ class PlatformManager:
         webchat_logger = EventLogger(name='webchat-adapter', ap=self.ap)
         webchat_adapter_inst = webchat_adapter_class(
             {},
-            self.ap,
             webchat_logger,
         )
+        webchat_adapter_inst.ap = self.ap
 
         self.webchat_proxy_bot = RuntimeBot(
             ap=self.ap,
@@ -221,7 +223,6 @@ class PlatformManager:
 
         adapter_inst = self.adapter_dict[bot_entity.adapter](
             bot_entity.adapter_config,
-            self.ap,
             logger,
         )
 
