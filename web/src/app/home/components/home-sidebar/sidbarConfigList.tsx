@@ -47,6 +47,7 @@ export const sidebarConfigList = [
       zh_Hans: 'https://docs.langbot.app/zh/deploy/models/readme.html',
     },
   }),
+
   new SidebarChildVO({
     id: 'pipelines',
     name: t('pipelines.title'),
