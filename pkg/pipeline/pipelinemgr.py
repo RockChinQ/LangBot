@@ -5,13 +5,18 @@ import traceback
 
 import sqlalchemy
 
-from ..core import app, entities
+from ..core import app
 from . import entities as pipeline_entities
 from ..entity.persistence import pipeline as persistence_pipeline
 from . import stage
-from ..platform.types import message as platform_message, events as platform_events
-from ..plugin import events
+import langbot_plugin.api.entities.builtin.platform.message as platform_message
+import langbot_plugin.api.entities.builtin.platform.events as platform_events
+import langbot_plugin.api.entities.events as events
 from ..utils import importutil
+
+import langbot_plugin.api.entities.builtin.provider.session as provider_session
+import langbot_plugin.api.entities.builtin.pipeline.query as pipeline_query
+import langbot_plugin.api.entities.context as event_context
 
 from . import (
     resprule,
@@ -75,11 +80,11 @@ class RuntimePipeline:
         self.pipeline_entity = pipeline_entity
         self.stage_containers = stage_containers
 
-    async def run(self, query: entities.Query):
+    async def run(self, query: pipeline_query.Query):
         query.pipeline_config = self.pipeline_entity.config
         await self.process_query(query)
 
-    async def _check_output(self, query: entities.Query, result: pipeline_entities.StageProcessResult):
+    async def _check_output(self, query: pipeline_query.Query, result: pipeline_entities.StageProcessResult):
         """检查输出"""
         if result.user_notice:
             # 处理str类型
@@ -109,7 +114,7 @@ class RuntimePipeline:
     async def _execute_from_stage(
         self,
         stage_index: int,
-        query: entities.Query,
+        query: pipeline_query.Query,
     ):
         """从指定阶段开始执行，实现了责任链模式和基于生成器的阶段分叉功能。
 
@@ -136,7 +141,7 @@ class RuntimePipeline:
         while i < len(self.stage_containers):
             stage_container = self.stage_containers[i]
 
-            query.current_stage = stage_container  # 标记到 Query 对象里
+            query.current_stage_name = stage_container.inst_name  # 标记到 Query 对象里
 
             result = stage_container.inst.process(query, stage_container.inst_name)
 
@@ -169,25 +174,36 @@ class RuntimePipeline:
 
             i += 1
 
-    async def process_query(self, query: entities.Query):
+    async def process_query(self, query: pipeline_query.Query):
         """处理请求"""
         try:
             # ======== 触发 MessageReceived 事件 ========
             event_type = (
                 events.PersonMessageReceived
-                if query.launcher_type == entities.LauncherTypes.PERSON
+                if query.launcher_type == provider_session.LauncherTypes.PERSON
                 else events.GroupMessageReceived
             )
 
-            event_ctx = await self.ap.plugin_mgr.emit_event(
-                event=event_type(
-                    launcher_type=query.launcher_type.value,
-                    launcher_id=query.launcher_id,
-                    sender_id=query.sender_id,
-                    message_chain=query.message_chain,
-                    query=query,
-                )
+            print(query)
+            print(query.model_dump(exclude_none=True))
+
+            event_obj = event_type(
+                launcher_type=query.launcher_type.value,
+                launcher_id=query.launcher_id,
+                sender_id=query.sender_id,
+                message_chain=query.message_chain,
+                query=query,
             )
+
+            event_ctx = event_context.EventContext(
+                event=event_obj,
+            )
+
+            event_ctx_result = await self.ap.plugin_connector.handler.emit_event(
+                event_ctx.model_dump(exclude_none=True)
+            )
+
+            event_ctx.update(**event_ctx_result)
 
             if event_ctx.is_prevented_default():
                 return
@@ -196,7 +212,7 @@ class RuntimePipeline:
 
             await self._execute_from_stage(0, query)
         except Exception as e:
-            inst_name = query.current_stage.inst_name if query.current_stage else 'unknown'
+            inst_name = query.current_stage_name if query.current_stage_name else 'unknown'
             self.ap.logger.error(f'处理请求时出错 query_id={query.query_id} stage={inst_name} : {e}')
             self.ap.logger.error(f'Traceback: {traceback.format_exc()}')
         finally:

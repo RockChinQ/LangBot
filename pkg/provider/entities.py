@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import typing
-import pydantic.v1 as pydantic
+import pydantic
 
 from pkg.provider import entities
 
 
-from ..platform.types import message as platform_message
+import langbot_plugin.api.entities.builtin.platform.message as platform_message
 
 
 class FunctionCall(pydantic.BaseModel):
