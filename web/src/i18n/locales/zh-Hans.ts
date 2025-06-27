@@ -224,6 +224,10 @@ const zhHans = {
       atTips: '提及机器人',
     },
   },
+  knowledge: {
+    title: '知识库',
+    description: '配置可用于提升模型回复质量的知识库',
+  },
   register: {
     title: '初始化 LangBot 👋',
     description: '这是您首次启动 LangBot',

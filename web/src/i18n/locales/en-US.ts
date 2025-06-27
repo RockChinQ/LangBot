@@ -229,6 +229,10 @@ const enUS = {
       atTips: 'Mention the bot',
     },
   },
+  knowledge: {
+    title: 'Knowledge',
+    description: 'Configuring knowledge bases for improved LLM responses',
+  },
   register: {
     title: 'Initialize LangBot 👋',
     description: 'This is your first time starting LangBot',
