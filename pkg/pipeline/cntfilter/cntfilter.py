@@ -83,7 +83,7 @@ class ContentFilterStage(stage.PipelineStage):
                     elif result.level == filter_entities.ResultLevel.PASS:  # 传到下一个
                         message = result.replacement
 
-            query.message_chain = platform_message.MessageChain(platform_message.Plain(message))
+            query.message_chain = platform_message.MessageChain(platform_message.Plain(text=message))
 
             return entities.StageProcessResult(result_type=entities.ResultType.CONTINUE, new_query=query)
 

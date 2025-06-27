@@ -184,24 +184,20 @@ class RuntimePipeline:
                 else events.GroupMessageReceived
             )
 
-            print(query)
-            print(query.model_dump(exclude_none=True))
-
             event_obj = event_type(
                 launcher_type=query.launcher_type.value,
                 launcher_id=query.launcher_id,
                 sender_id=query.sender_id,
                 message_chain=query.message_chain,
-                query=query,
             )
 
             event_ctx = event_context.EventContext(
                 event=event_obj,
             )
 
-            event_ctx_result = await self.ap.plugin_connector.handler.emit_event(
-                event_ctx.model_dump(exclude_none=True)
-            )
+            event_ctx_data = event_ctx.model_dump(serialize_as_any=True)
+
+            event_ctx_result = await self.ap.plugin_connector.handler.emit_event(event_ctx_data)
 
             event_ctx.update(**event_ctx_result)
 
