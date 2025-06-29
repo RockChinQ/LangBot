@@ -133,6 +133,23 @@ export interface Bot {
   updated_at?: string;
 }
 
+export interface ApiRespKnowledgeBases {
+  bases: KnowledgeBase[];
+}
+
+export interface ApiRespKnowledgeBase {
+  base: KnowledgeBase;
+}
+
+export interface KnowledgeBase {
+  uuid?: string;
+  name: string;
+  description: string;
+  embedding_model_uuid: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 // plugins
 export interface ApiRespPlugins {
   plugins: Plugin[];

@@ -34,6 +34,9 @@ import {
   AsyncTask,
   ApiRespWebChatMessage,
   ApiRespWebChatMessages,
+  ApiRespKnowledgeBases,
+  ApiRespKnowledgeBase,
+  KnowledgeBase,
 } from '@/app/infra/entities/api';
 import { GetBotLogsRequest } from '@/app/infra/http/requestParam/bots/GetBotLogsRequest';
 import { GetBotLogsResponse } from '@/app/infra/http/requestParam/bots/GetBotLogsResponse';
@@ -425,6 +428,19 @@ class HttpClient {
     request: GetBotLogsRequest,
   ): Promise<GetBotLogsResponse> {
     return this.post(`/api/v1/platform/bots/${botId}/logs`, request);
+  }
+
+  // ============ Knowledge Base API ============
+  public getKnowledgeBases(): Promise<ApiRespKnowledgeBases> {
+    return this.get('/api/v1/knowledge/bases');
+  }
+
+  public getKnowledgeBase(uuid: string): Promise<ApiRespKnowledgeBase> {
+    return this.get(`/api/v1/knowledge/bases/${uuid}`);
+  }
+
+  public createKnowledgeBase(base: KnowledgeBase): Promise<{ uuid: string }> {
+    return this.post('/api/v1/knowledge/bases', base);
   }
 
   // ============ Plugins API ============
