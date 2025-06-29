@@ -103,7 +103,9 @@ class Application:
 
     user_service: user_service.UserService = None
 
-    model_service: model_service.ModelsService = None
+    llm_model_service: model_service.LLMModelsService = None
+
+    embedding_models_service: model_service.EmbeddingModelsService = None
 
     pipeline_service: pipeline_service.PipelineService = None
 
