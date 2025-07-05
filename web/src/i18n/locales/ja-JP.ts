@@ -232,6 +232,10 @@ const jaJP = {
       atTips: 'ボットをメンション',
     },
   },
+  knowledge: {
+    title: '知識ベース',
+    description: 'LLMの応答品質を向上させるための知識ベースを設定します',
+  },
   register: {
     title: 'LangBot を初期化 👋',
     description: 'これはLangBotの初回起動です',
@@ -259,6 +263,21 @@ const jaJP = {
     resetFailed:
       'パスワードのリセットに失敗しました。メールアドレスと復旧キーを確認してください',
     backToLogin: 'ログインに戻る',
+  },
+  embedding: {
+    description: 'テキストのベクトル化に使用する埋め込みモデルを管理します',
+    createModel: '埋め込みモデルを作成',
+    editModel: '埋め込みモデルを編集',
+    getModelListError: '埋め込みモデルリストの取得に失敗しました：',
+    embeddingModels: '埋め込みモデル',
+    extraParametersDescription:
+      'リクエストボディに追加されるパラメータ（encoding_format、dimensions など）',
+  },
+  llm: {
+    description: 'チャットメッセージの生成に使用するLLMモデルを管理します',
+    llmModels: 'LLMモデル',
+    extraParametersDescription:
+      'リクエストボディに追加されるパラメータ（max_tokens、temperature、top_p など）',
   },
 };
 

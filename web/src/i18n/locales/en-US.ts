@@ -86,14 +86,13 @@ const enUS = {
     string: 'String',
     number: 'Number',
     boolean: 'Boolean',
-    extraParametersDescription:
-      'Will be attached to the request body, such as max_tokens, temperature, top_p, etc.',
     selectModelProvider: 'Select Model Provider',
     modelProviderDescription:
       'Please fill in the model name provided by the supplier',
     selectModel: 'Select Model',
     testSuccess: 'Test successful',
     testError: 'Test failed, please check your model configuration',
+    llmModels: 'LLM Models',
   },
   bots: {
     title: 'Bots',
@@ -231,6 +230,10 @@ const enUS = {
       atTips: 'Mention the bot',
     },
   },
+  knowledge: {
+    title: 'Knowledge',
+    description: 'Configuring knowledge bases for improved LLM responses',
+  },
   register: {
     title: 'Initialize LangBot 👋',
     description: 'This is your first time starting LangBot',
@@ -258,6 +261,21 @@ const enUS = {
     resetFailed:
       'Password reset failed, please check your email and recovery key',
     backToLogin: 'Back to Login',
+  },
+  embedding: {
+    description: 'Manage Embedding models for text vectorization',
+    createModel: 'Create Embedding Model',
+    editModel: 'Edit Embedding Model',
+    getModelListError: 'Failed to get Embedding model list: ',
+    embeddingModels: 'Embedding',
+    extraParametersDescription:
+      'Will be attached to the request body, such as encoding_format, dimensions, etc.',
+  },
+  llm: {
+    description: 'Manage LLM models for conversation generation',
+    llmModels: 'LLM',
+    extraParametersDescription:
+      'Will be attached to the request body, such as max_tokens, temperature, top_p, etc.',
   },
 };
 

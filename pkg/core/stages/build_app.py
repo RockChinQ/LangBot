@@ -9,6 +9,7 @@ from ...command import cmdmgr
 from ...provider.session import sessionmgr as llm_session_mgr
 from ...provider.modelmgr import modelmgr as llm_model_mgr
 from ...provider.tools import toolmgr as llm_tool_mgr
+from ...rag.knowledge.RAG_Manager import RAG_Manager as knowledge_base_mgr
 from ...platform import botmgr as im_mgr
 from ...persistence import mgr as persistencemgr
 from ...api.http.controller import main as http_controller
@@ -95,8 +96,15 @@ class BuildAppStage(stage.BootingStage):
         user_service_inst = user_service.UserService(ap)
         ap.user_service = user_service_inst
 
-        model_service_inst = model_service.ModelsService(ap)
-        ap.model_service = model_service_inst
+        llm_model_service_inst = model_service.LLMModelsService(ap)
+        ap.llm_model_service = llm_model_service_inst
+
+        embedding_models_service_inst = model_service.EmbeddingModelsService(ap)
+        ap.embedding_models_service = embedding_models_service_inst
+
+        knowledge_base_service_inst = knowledge_base_mgr(ap)
+        await knowledge_base_service_inst.initialize_rag_system()
+        ap.knowledge_base_service = knowledge_base_service_inst
 
         pipeline_service_inst = pipeline_service.PipelineService(ap)
         ap.pipeline_service = pipeline_service_inst
